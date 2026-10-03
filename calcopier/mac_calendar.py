@@ -1,11 +1,10 @@
 """EventKit read/write. macOS only."""
 
 import threading
-import time
 from datetime import datetime, timedelta, timezone
 
 import EventKit
-from Foundation import NSDate, NSRunLoop
+from Foundation import NSDate
 
 from .model import WorkEvent, make_key, marker_in
 
@@ -41,22 +40,23 @@ def open_store():
     return store
 
 
-def find_calendar(store, title, timeout=10.0):
-    """Calendar accounts load asynchronously in a fresh store, so poll briefly before giving up."""
-    store.refreshSourcesIfNecessary()
-    deadline = time.monotonic() + timeout
-    while True:
-        calendars = store.calendarsForEntityType_(EventKit.EKEntityTypeEvent) or []
-        matches = [c for c in calendars if str(c.title()) == title]
-        if len(matches) == 1:
-            return matches[0]
-        if len(matches) > 1:
-            raise CalendarError(f"Found {len(matches)} calendars titled {title!r}; rename one.")
-        if time.monotonic() >= deadline:
-            seen = ", ".join(sorted(repr(str(c.title())) for c in calendars)) or "none"
-            raise CalendarError(f"No calendar titled {title!r} after {timeout:.0f}s. Visible: {seen}")
-        # Spin the run loop so EventKit can deliver the account data it loads in the background.
-        NSRunLoop.currentRunLoop().runUntilDate_(NSDate.dateWithTimeIntervalSinceNow_(0.5))
+def find_calendar(store, title, account=None):
+    """Match by title, optionally narrowed to one account (e.g. "Exchange").
+
+    Exchange calendar names come from the server: local renames revert, so match the server name.
+    """
+    calendars = store.calendarsForEntityType_(EventKit.EKEntityTypeEvent) or []
+    matches = [
+        c for c in calendars
+        if str(c.title()) == title and (account is None or str(c.source().title()) == account)
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    label = f"{title!r}" + (f" in account {account!r}" if account else "")
+    if matches:
+        raise CalendarError(f"Found {len(matches)} calendars titled {label}; narrow it with an account.")
+    seen = ", ".join(sorted(f"{str(c.title())!r} ({c.source().title()})" for c in calendars)) or "none"
+    raise CalendarError(f"No calendar titled {label}. Visible: {seen}")
 
 
 def window(days):

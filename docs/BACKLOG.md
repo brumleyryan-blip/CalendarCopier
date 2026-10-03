@@ -10,6 +10,7 @@ without screenshots or memory.
 | Destination | iCloud calendar "CalendarCopier", written locally via EventKit, shared to her Apple ID (replaces Google: no OAuth needed) |
 | Event content (v1) | Generic "Busy"; category label added in a later feature |
 | Window | Next 7 days |
+| Source lookup | Exchange account + server name "Calendar" (local renames of Exchange calendars revert) |
 | Status rules | Declined hidden; tentative, unanswered and organizer shown as busy; all-day skipped |
 | Self-blocks | Shown as Busy in F1; distinct label (e.g. "Focus") in F5 |
 | Wife's devices | iPhone + Google account |
@@ -41,7 +42,7 @@ without screenshots or memory.
   plus how quickly edits and cancellations show up.
 
 - [ ] **F1 — One-shot copy (manual run)** — built, awaiting test on the Mac
-  `python -m calcopier.sync [--dry-run]` reads today + 7 days of "RB Work" and writes "Busy"
+  `python -m calcopier.sync [--dry-run]` reads today + 7 days of the Exchange "Calendar" and writes "Busy"
   blocks into "CalendarCopier". Each block carries a hashed marker in its notes, so re-runs
   add no duplicates and only tool-written events are ever touched.
 

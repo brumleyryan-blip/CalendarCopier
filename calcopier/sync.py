@@ -13,7 +13,8 @@ from . import rules
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--source", default="RB Work", help="Work calendar title")
+    parser.add_argument("--source", default="Calendar", help="Work calendar title (server name for Exchange)")
+    parser.add_argument("--source-account", default="Exchange", help="Account the work calendar belongs to")
     parser.add_argument("--dest", default="CalendarCopier", help="Shared calendar title")
     parser.add_argument("--days", type=int, default=7)
     parser.add_argument("--dry-run", action="store_true")
@@ -23,7 +24,7 @@ def main(argv=None):
 
     try:
         store = cal.open_store()
-        source = cal.find_calendar(store, args.source)
+        source = cal.find_calendar(store, args.source, args.source_account)
         dest = cal.find_calendar(store, args.dest)
         start, end = cal.window(args.days)
 
