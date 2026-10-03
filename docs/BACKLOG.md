@@ -19,6 +19,10 @@ without screenshots or memory.
   1. Outlook web "Publish a calendar" ICS link (no auth, easiest)
   2. Microsoft Graph API (may need IT/admin consent)
   3. Fallback: iPhone Shortcut pushes events to a cloud endpoint
+  Findings (2026-10-03):
+  - "Publish a calendar" is missing from Outlook web settings, so ICS publishing is off for the tenant.
+  - Sharing to any external address (including Gmail) is blocked, so a separate Gmail account won't help.
+  - Next to try: Power Automate (Outlook trigger → Google Calendar), then the iPhone Shortcut fallback.
   Done when: we can fetch today's events from a script and see the right times,
   plus how quickly edits and cancellations show up.
 
