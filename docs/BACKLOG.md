@@ -51,18 +51,18 @@ without screenshots or memory.
   Ended meetings stay for the day; days before today are never touched. If the work
   calendar reads as empty, removals are skipped so a glitch can't wipe her calendar.
 
-- [ ] **F3 — Run every 10 minutes on the Mac, around the clock** — built, awaiting test
+- [x] **F3 — Run every 10 minutes on the Mac, around the clock** — verified 2026-10-03 (launchd run logged, no extra permission prompt)
   `scripts/install_agent.sh` installs a launchd agent (every 600s + at login), logging to
   `~/Library/Logs/CalendarCopier/sync.log`. Docked Mac confirmed to stay awake overnight.
-  Open risk: calendar permission for Python when launched by launchd instead of Terminal.
 
 - [ ] **F3.5 — Sharing setup (no code)**
-  Before sharing with my wife, decide: normal iCloud share (she disables "Shared Calendar
-  Changes" notifications, which silences all shared calendars) vs. published/subscribed
-  calendar (no notifications, slower refresh, link-based). Test notification behavior and
-  default alert times on her phone with a test calendar first.
+  Decided: normal iCloud share to her Apple ID, view-only. She turns off
+  Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
+  calendars). Still to verify on her phone: no alerts from default alert times.
 
-- [ ] **F4 — Failure visibility**
+- [ ] **F4 — Failure visibility** — design in review (mockup: stale-warning options A/B/C)
+  Plan: dead-man's-switch warning block on the shared calendar (pushed ahead each good run,
+  comes due if syncing stops) plus a macOS notification on sync errors.
   If the sync breaks (calendar missing, permission revoked, Mac asleep), I get notified
   rather than the calendar silently going stale. Also: look up calendars by their stable
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
