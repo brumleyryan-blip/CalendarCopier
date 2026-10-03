@@ -10,8 +10,9 @@ without screenshots or memory.
 | Destination | A dedicated Google Calendar, shared with my wife |
 | Event content (v1) | Generic "Busy"; category label added in a later feature |
 | Working-hours block | Deferred (see F7) |
-| Hosting | Cloud, independent of my Mac (platform TBD after F0) |
-| Read path | iPhone Shortcut pushes events (Power Automate blocked by DLP 'Core: Default') |
+| Hosting | Local on the docked MacBook (launchd); reader/writer split so a phone or cloud reader can replace it later |
+| Read path | Local Python on the Mac via EventKit (Power Automate + Google connector blocked by DLP) |
+| Language | Python |
 | Data leaving phone | Full detail OK (titles/attendees); wife still sees only Busy + category |
 
 ## Features (one at a time, in order)
@@ -25,7 +26,8 @@ without screenshots or memory.
   - "Publish a calendar" is missing from Outlook web settings, so ICS publishing is off for the tenant.
   - Sharing to any external address (including Gmail) is blocked, so a separate Gmail account won't help.
   - Power Automate: Outlook.com connector blocked by DLP policy 'Core: Default'.
-  - Now testing: iPhone Shortcut (iOS 27.0.1) — can it read work events, which fields, and does it run while locked?
+  - Shortcut path shelved in favor of the Mac (only needed when working from home, when the Mac is docked).
+  - Now testing: `spikes/read_calendar.py` — EventKit access, fields, stable IDs.
   Done when: we can fetch today's events from a script and see the right times,
   plus how quickly edits and cancellations show up.
 
@@ -36,8 +38,9 @@ without screenshots or memory.
 - [ ] **F2 — Keep in sync: updates and cancellations**
   Moved meetings move, cancelled meetings disappear, declined meetings are skipped.
 
-- [ ] **F3 — Cloud schedule every 10–15 minutes**
-  Deploy F1+F2 to a scheduled cloud job, with secrets stored securely.
+- [ ] **F3 — Run every 10–15 minutes on the Mac**
+  launchd agent; confirm calendar permission works when not launched from Terminal,
+  and that the docked, clamshell Mac stays awake overnight.
 
 - [ ] **F4 — Failure visibility**
   If the sync breaks (expired token, revoked link), I get notified rather than
