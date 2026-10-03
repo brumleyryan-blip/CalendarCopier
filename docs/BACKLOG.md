@@ -11,6 +11,8 @@ without screenshots or memory.
 | Event content (v1) | Generic "Busy"; category label added in a later feature |
 | Working-hours block | Deferred (see F7) |
 | Hosting | Cloud, independent of my Mac (platform TBD after F0) |
+| Read path | iPhone Shortcut pushes events (Power Automate blocked by DLP 'Core: Default') |
+| Data leaving phone | Full detail OK (titles/attendees); wife still sees only Busy + category |
 
 ## Features (one at a time, in order)
 
@@ -22,7 +24,8 @@ without screenshots or memory.
   Findings (2026-10-03):
   - "Publish a calendar" is missing from Outlook web settings, so ICS publishing is off for the tenant.
   - Sharing to any external address (including Gmail) is blocked, so a separate Gmail account won't help.
-  - Next to try: Power Automate (Outlook trigger → Google Calendar), then the iPhone Shortcut fallback.
+  - Power Automate: Outlook.com connector blocked by DLP policy 'Core: Default'.
+  - Now testing: iPhone Shortcut (iOS 27.0.1) — can it read work events, which fields, and does it run while locked?
   Done when: we can fetch today's events from a script and see the right times,
   plus how quickly edits and cancellations show up.
 
