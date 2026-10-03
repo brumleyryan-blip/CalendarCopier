@@ -1,1 +1,3 @@
-pyobjc-framework-EventKit
+# pyobjc 12 dropped Python 3.9; older Pythons get the last compatible release.
+pyobjc-framework-EventKit>=12; python_version >= "3.10"
+pyobjc-framework-EventKit>=11,<12; python_version < "3.10"
