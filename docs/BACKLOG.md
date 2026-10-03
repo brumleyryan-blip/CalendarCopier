@@ -41,7 +41,7 @@ without screenshots or memory.
   Done when: we can fetch today's events from a script and see the right times,
   plus how quickly edits and cancellations show up.
 
-- [ ] **F1 — One-shot copy (manual run)** — built, awaiting test on the Mac
+- [x] **F1 — One-shot copy (manual run)** — verified 2026-10-03: 17 blocks created, re-run created 0
   `python -m calcopier.sync [--dry-run]` reads today + 7 days of the Exchange "Calendar" and writes "Busy"
   blocks into "CalendarCopier". Each block carries a hashed marker in its notes, so re-runs
   add no duplicates and only tool-written events are ever touched.
@@ -54,8 +54,9 @@ without screenshots or memory.
   and that the docked, clamshell Mac stays awake overnight.
 
 - [ ] **F4 — Failure visibility**
-  If the sync breaks (expired token, revoked link), I get notified rather than
-  the calendar silently going stale.
+  If the sync breaks (calendar missing, permission revoked, Mac asleep), I get notified
+  rather than the calendar silently going stale. Also: look up calendars by their stable
+  identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
 - [ ] **F5 — Categorization v1 (rules)**
   Label each block, e.g. "Video call", "Webinar (listening, can be interrupted?)",
