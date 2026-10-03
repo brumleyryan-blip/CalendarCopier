@@ -10,8 +10,13 @@ Usage:
 
 import argparse
 import sys
+from datetime import datetime
 
 from . import rules
+
+
+def _stamp():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _fmt(start, end):
@@ -39,7 +44,7 @@ def main(argv=None):
         existing = cal.existing_blocks(store, dest, start, end)
         p = rules.plan(events, existing, start)
 
-        print(f"{len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
+        print(f"[{_stamp()}] {len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
               f"{len(p.deletes)} to remove, {p.kept} unchanged.")
         for b in p.creates:
             print(f"  + {_fmt(b.start, b.end)}  {b.title}")
@@ -56,7 +61,7 @@ def main(argv=None):
             cal.apply_plan(store, dest, p)
             print("Changes applied.")
     except cal.CalendarError as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        print(f"[{_stamp()}] Error: {exc}", file=sys.stderr)
         return 1
     return 0
 

@@ -46,14 +46,21 @@ without screenshots or memory.
   blocks into "CalendarCopier". Each block carries a hashed marker in its notes, so re-runs
   add no duplicates and only tool-written events are ever touched.
 
-- [ ] **F2 — Keep in sync: updates and cancellations** — built, awaiting test on the Mac
+- [x] **F2 — Keep in sync: updates and cancellations** — verified 2026-10-03: create, move (in place), remove
   Moved meetings update in place; cancelled/declined meetings are removed silently.
   Ended meetings stay for the day; days before today are never touched. If the work
   calendar reads as empty, removals are skipped so a glitch can't wipe her calendar.
 
-- [ ] **F3 — Run every 10–15 minutes on the Mac**
-  launchd agent; confirm calendar permission works when not launched from Terminal,
-  and that the docked, clamshell Mac stays awake overnight.
+- [ ] **F3 — Run every 10 minutes on the Mac, around the clock** — built, awaiting test
+  `scripts/install_agent.sh` installs a launchd agent (every 600s + at login), logging to
+  `~/Library/Logs/CalendarCopier/sync.log`. Docked Mac confirmed to stay awake overnight.
+  Open risk: calendar permission for Python when launched by launchd instead of Terminal.
+
+- [ ] **F3.5 — Sharing setup (no code)**
+  Before sharing with my wife, decide: normal iCloud share (she disables "Shared Calendar
+  Changes" notifications, which silences all shared calendars) vs. published/subscribed
+  calendar (no notifications, slower refresh, link-based). Test notification behavior and
+  default alert times on her phone with a test calendar first.
 
 - [ ] **F4 — Failure visibility**
   If the sync breaks (calendar missing, permission revoked, Mac asleep), I get notified
