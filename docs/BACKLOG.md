@@ -7,10 +7,11 @@ without screenshots or memory.
 | Topic | Decision |
 |---|---|
 | Work calendar source | Microsoft 365 / Outlook (Exchange) |
-| Destination | A dedicated Google Calendar, shared with my wife |
+| Destination | iCloud calendar "CalendarCopier", written locally via EventKit, shared to her Apple ID (replaces Google: no OAuth needed) |
 | Event content (v1) | Generic "Busy"; category label added in a later feature |
 | Window | Next 7 days |
-| Status rules | Declined hidden; tentative shown as busy |
+| Status rules | Declined hidden; tentative, unanswered and organizer shown as busy; all-day skipped |
+| Self-blocks | Shown as Busy in F1; distinct label (e.g. "Focus") in F5 |
 | Wife's devices | iPhone + Google account |
 | Working-hours block | Deferred (see F7) |
 | Hosting | Local on the docked MacBook (launchd); reader/writer split so a phone or cloud reader can replace it later |
@@ -39,9 +40,10 @@ without screenshots or memory.
   Done when: we can fetch today's events from a script and see the right times,
   plus how quickly edits and cancellations show up.
 
-- [ ] **F1 — One-shot copy (manual run)**
-  A script reads the next N days of work events and writes "Busy" blocks into the
-  shared Google Calendar. Re-running it adds no duplicates.
+- [ ] **F1 — One-shot copy (manual run)** — built, awaiting test on the Mac
+  `python -m calcopier.sync [--dry-run]` reads today + 7 days of "RB Work" and writes "Busy"
+  blocks into "CalendarCopier". Each block carries a hashed marker in its notes, so re-runs
+  add no duplicates and only tool-written events are ever touched.
 
 - [ ] **F2 — Keep in sync: updates and cancellations**
   Moved meetings move, cancelled meetings disappear, declined meetings are skipped.
