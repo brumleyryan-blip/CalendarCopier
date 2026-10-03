@@ -1,14 +1,21 @@
-"""F1: one-shot copy of work meetings into the shared calendar as 'Busy' blocks.
+"""Sync work meetings into the shared calendar as 'Busy' blocks.
+
+Creates new blocks, moves blocks whose meeting moved, and removes blocks for meetings that
+were cancelled or declined. Days before today are never touched.
 
 Usage:
-    python -m calcopier.sync --dry-run     # show what would be created
-    python -m calcopier.sync               # create missing blocks
+    python -m calcopier.sync --dry-run     # show what would change
+    python -m calcopier.sync               # apply changes
 """
 
 import argparse
 import sys
 
 from . import rules
+
+
+def _fmt(start, end):
+    return f"{start.astimezone():%a %m/%d %H:%M}-{end.astimezone():%H:%M}"
 
 
 def main(argv=None):
@@ -29,21 +36,25 @@ def main(argv=None):
         start, end = cal.window(args.days)
 
         events = cal.read_work_events(store, source, start, end)
-        existing = cal.existing_hashes(store, dest, start, end)
-        creates = rules.plan_creates(events, existing)
+        existing = cal.existing_blocks(store, dest, start, end)
+        p = rules.plan(events, existing, start)
 
-        copyable = sum(rules.should_copy(e) for e in events)
-        print(f"{len(events)} work events, {copyable} copyable, {copyable - len(creates)} already synced, "
-              f"{len(creates)} to create.")
-        for b in creates:
-            local = b.start.astimezone()
-            print(f"  + {local:%a %m/%d %H:%M}-{b.end.astimezone():%H:%M}  {b.title}")
+        print(f"{len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
+              f"{len(p.deletes)} to remove, {p.kept} unchanged.")
+        for b in p.creates:
+            print(f"  + {_fmt(b.start, b.end)}  {b.title}")
+        for ex, b in p.updates:
+            print(f"  ~ {_fmt(ex.start, ex.end)} -> {_fmt(b.start, b.end)}")
+        for ex in p.deletes:
+            print(f"  - {_fmt(ex.start, ex.end)}  {ex.title}")
+        if p.deletes_suppressed:
+            print("Warning: work calendar returned no events; skipping removals as a safety measure.")
 
         if args.dry_run:
             print("Dry run: nothing written.")
-        elif creates:
-            cal.create_blocks(store, dest, creates)
-            print(f"Created {len(creates)} blocks in {args.dest!r}.")
+        elif p.creates or p.updates or p.deletes:
+            cal.apply_plan(store, dest, p)
+            print("Changes applied.")
     except cal.CalendarError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1

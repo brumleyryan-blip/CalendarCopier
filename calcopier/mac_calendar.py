@@ -7,6 +7,7 @@ import EventKit
 from Foundation import NSDate
 
 from .model import WorkEvent, make_key, marker_in
+from .rules import Existing
 
 PARTICIPANT_STATUS = {
     0: "unknown", 1: "pending", 2: "accepted", 3: "declined",
@@ -104,15 +105,27 @@ def read_work_events(store, calendar, start, end):
     return result
 
 
-def existing_hashes(store, calendar, start, end):
-    """Marker hashes of blocks this tool already wrote. Unmarked events are left alone."""
-    return {h for h in (marker_in(str(e.notes() or "")) for e in _events(store, calendar, start, end)) if h}
+def existing_blocks(store, calendar, start, end):
+    """Blocks this tool already wrote. Unmarked events are never returned, so never touched."""
+    result = []
+    for e in _events(store, calendar, start, end):
+        h = marker_in(str(e.notes() or ""))
+        if h:
+            result.append(Existing(hash=h, title=str(e.title() or ""),
+                                   start=_dt(e.startDate()), end=_dt(e.endDate()), ref=e))
+    return result
 
 
-def create_blocks(store, calendar, blocks):
+def _save(store, ev, what):
+    ok, error = store.saveEvent_span_commit_error_(ev, EventKit.EKSpanThisEvent, False, None)
+    if not ok:
+        raise CalendarError(f"Failed to {what}: {error}")
+
+
+def apply_plan(store, calendar, plan):
     if not calendar.allowsContentModifications():
         raise CalendarError(f"Calendar {calendar.title()!r} is read-only.")
-    for block in blocks:
+    for block in plan.creates:
         ev = EventKit.EKEvent.eventWithEventStore_(store)
         ev.setCalendar_(calendar)
         ev.setTitle_(block.title)
@@ -120,9 +133,17 @@ def create_blocks(store, calendar, blocks):
         ev.setEndDate_(_nsdate(block.end))
         ev.setAvailability_(EventKit.EKEventAvailabilityBusy)
         ev.setNotes_(f"Synced from Ryan's work calendar.\n{block.marker}")
-        ok, error = store.saveEvent_span_commit_error_(ev, EventKit.EKSpanThisEvent, False, None)
+        _save(store, ev, f"create block at {block.start}")
+    for existing, block in plan.updates:
+        ev = existing.ref
+        ev.setTitle_(block.title)
+        ev.setStartDate_(_nsdate(block.start))
+        ev.setEndDate_(_nsdate(block.end))
+        _save(store, ev, f"update block at {block.start}")
+    for existing in plan.deletes:
+        ok, error = store.removeEvent_span_commit_error_(existing.ref, EventKit.EKSpanThisEvent, False, None)
         if not ok:
-            raise CalendarError(f"Failed to save block at {block.start}: {error}")
+            raise CalendarError(f"Failed to remove block at {existing.start}: {error}")
     ok, error = store.commit_(None)
     if not ok:
         raise CalendarError(f"Failed to commit changes: {error}")

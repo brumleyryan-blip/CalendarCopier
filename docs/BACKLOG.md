@@ -46,8 +46,10 @@ without screenshots or memory.
   blocks into "CalendarCopier". Each block carries a hashed marker in its notes, so re-runs
   add no duplicates and only tool-written events are ever touched.
 
-- [ ] **F2 — Keep in sync: updates and cancellations**
-  Moved meetings move, cancelled meetings disappear, declined meetings are skipped.
+- [ ] **F2 — Keep in sync: updates and cancellations** — built, awaiting test on the Mac
+  Moved meetings update in place; cancelled/declined meetings are removed silently.
+  Ended meetings stay for the day; days before today are never touched. If the work
+  calendar reads as empty, removals are skipped so a glitch can't wipe her calendar.
 
 - [ ] **F3 — Run every 10–15 minutes on the Mac**
   launchd agent; confirm calendar permission works when not launched from Terminal,
