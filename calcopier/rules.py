@@ -1,9 +1,11 @@
 """Which work events become busy blocks, and how the shared calendar is reconciled."""
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
+from .categories import LABELS, classify
 from .model import Block, WorkEvent, short_hash
 
 
@@ -16,7 +18,10 @@ def should_copy(event: WorkEvent) -> bool:
 
 
 def to_block(event: WorkEvent) -> Block:
-    return Block(key=event.key, title="Busy", start=event.start, end=event.end)
+    category, reason = classify(event)
+    notes = f"Ryan's work calendar ({reason})." if reason else ""
+    return Block(key=event.key, title=LABELS[category], start=event.start, end=event.end,
+                 notes=notes, category=category)
 
 
 HEARTBEAT_KEY = "__calcopier_heartbeat__"
@@ -45,6 +50,7 @@ class Existing:
     title: str
     start: datetime
     end: datetime
+    calendar: str = ""   # title of the calendar it lives in
     ref: Any = None
 
 
@@ -63,32 +69,42 @@ def _same(existing: Existing, block: Block) -> bool:
             and int(existing.end.timestamp()) == int(block.end.timestamp()))
 
 
-def plan(events, existing, window_start: datetime, heartbeat: Block = None, now: datetime = None) -> Plan:
-    """Make the shared calendar match the copyable work events within the window.
+def plan(events, existing, window_start: datetime, heartbeat: Block = None, now: datetime = None,
+         calendar_for=None) -> Plan:
+    """Make the shared calendars match the copyable work events within the window.
 
-    Only blocks starting on or after `window_start` are ever deleted, so past days are left alone.
-    With `heartbeat` (and `now`), also keep the stale-sync marker ahead of now.
+    `calendar_for` maps each category to the calendar title its blocks belong in; a block found
+    in the wrong calendar is removed and recreated in the right one. Only blocks starting on or
+    after `window_start` are ever deleted, so past days are left alone. With `heartbeat` (and
+    `now`), also keep the stale-sync marker ahead of now.
     """
+    calendar_for = calendar_for or defaultdict(str)
     desired = {short_hash(b.key): b for b in (to_block(e) for e in events if should_copy(e))}
     result = Plan()
 
     markers = [ex for ex in existing if ex.hash == HEARTBEAT_HASH]
-    existing = [ex for ex in existing if ex.hash != HEARTBEAT_HASH]
-
-    seen = set()
-    stale = []
+    by_hash = defaultdict(list)
     for ex in existing:
-        block = desired.get(ex.hash)
-        if block is None or ex.hash in seen:  # gone from work calendar, or a duplicate
-            stale.append(ex)
+        if ex.hash != HEARTBEAT_HASH:
+            by_hash[ex.hash].append(ex)
+
+    stale = []
+    for h, found in by_hash.items():
+        block = desired.get(h)
+        if block is None:  # gone from work calendar
+            stale.extend(found)
             continue
-        seen.add(ex.hash)
-        if _same(ex, block):
+        target = calendar_for[block.category]
+        match = next((ex for ex in found if ex.calendar == target), None)
+        stale.extend(ex for ex in found if ex is not match)  # duplicates, or in the wrong calendar
+        if match is None:
+            result.creates.append(block)
+        elif _same(match, block):
             result.kept += 1
         else:
-            result.updates.append((ex, block))
+            result.updates.append((match, block))
 
-    result.creates = [b for h, b in desired.items() if h not in seen]
+    result.creates.extend(b for h, b in desired.items() if h not in by_hash)
 
     stale = [ex for ex in stale if ex.start >= window_start]
     if stale and not events:

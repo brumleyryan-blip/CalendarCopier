@@ -82,14 +82,18 @@ without screenshots or memory.
   rather than the calendar silently going stale. Also: look up calendars by their stable
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
-- [ ] **F5 — Categorization v1 (rules)** — discovery: `spikes/category_signals.py`
-  Decided: categories Video call / Listening only / Away from home; anything unclear (and
-  self-blocks) stays "Busy". Title states whether she can interrupt. Manual override via a
-  [video]/[listen]/[away]/[busy] tag in the meeting title. Pending: label style (mockup
-  options 1–3) and rules from the signals survey.
-  Label each block, e.g. "Video call", "Webinar (listening, can be interrupted?)",
-  "Away from house", using title, attendees, location, and meeting links.
-  Mockups first.
+- [ ] **F5 — Categorization v1 (rules)** — webinar + away built, awaiting test on the Mac
+  Labels: "Webinar - Off Camera", "Away from Home", "Busy" (fallback, incl. self-blocks).
+  Color-coded via one iCloud calendar per category: "CalendarCopier Webinar",
+  "CalendarCopier Away" (busy stays in "CalendarCopier"); missing calendars fall back to the
+  main one. Rules in order: [tag] override ([webinar]/[listen]/[away]/[busy]) → webinar
+  keywords (webinar, AHOD, all hands, town hall, office hours, training, enablement,
+  lunch & learn) → away (street address, booked room, onsite/visit/lunch/dinner/offsite/
+  travel/flight/in person) → webinar by size (50+ attendees or a distribution list).
+
+- [ ] **F5b — Video call category**
+  "Customer Call - On Video" in its own color. Refine from `spikes/category_signals.py`
+  output (meeting app, external attendees).
 
 - [ ] **F6 — Categorization v2 (smarter/overrides)**
   Manual override keywords and/or an LLM classifier for ambiguous invites.

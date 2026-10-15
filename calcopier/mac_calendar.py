@@ -14,6 +14,7 @@ PARTICIPANT_STATUS = {
     4: "tentative", 5: "delegated", 6: "completed", 7: "in process",
 }
 FULL_ACCESS = 3
+PARTICIPANT_ROOM, PARTICIPANT_GROUP = 2, 4
 
 
 class CalendarError(RuntimeError):
@@ -86,9 +87,15 @@ def _my_status(event):
     return "organizer/none"
 
 
+def _is_group(attendee):
+    name = str(attendee.name() or "").lower()
+    return attendee.participantType() == PARTICIPANT_GROUP or name.startswith("group.")
+
+
 def read_work_events(store, calendar, start, end):
     result = []
     for e in _events(store, calendar, start, end):
+        attendees = list(e.attendees() or [])
         recurring = bool(e.hasRecurrenceRules()) or bool(e.isDetached())
         occurrence = e.occurrenceDate() or e.startDate()
         result.append(WorkEvent(
@@ -98,21 +105,24 @@ def read_work_events(store, calendar, start, end):
             end=_dt(e.endDate()),
             all_day=bool(e.isAllDay()),
             my_status=_my_status(e),
-            attendee_count=len(e.attendees() or []),
+            attendee_count=len(attendees),
             location=str(e.location() or ""),
             notes=str(e.notes() or ""),
+            has_group=any(_is_group(a) for a in attendees),
+            has_room=any(a.participantType() == PARTICIPANT_ROOM for a in attendees),
         ))
     return result
 
 
-def existing_blocks(store, calendar, start, end):
-    """Blocks this tool already wrote. Unmarked events are never returned, so never touched."""
+def existing_blocks(store, calendars, start, end):
+    """Blocks this tool already wrote, across its calendars. Unmarked events are never touched."""
     result = []
-    for e in _events(store, calendar, start, end):
-        h = marker_in(str(e.notes() or ""))
-        if h:
-            result.append(Existing(hash=h, title=str(e.title() or ""),
-                                   start=_dt(e.startDate()), end=_dt(e.endDate()), ref=e))
+    for calendar in calendars:
+        for e in _events(store, calendar, start, end):
+            h = marker_in(str(e.notes() or ""))
+            if h:
+                result.append(Existing(hash=h, title=str(e.title() or ""), start=_dt(e.startDate()),
+                                       end=_dt(e.endDate()), calendar=str(calendar.title()), ref=e))
     return result
 
 
@@ -129,12 +139,14 @@ def _save(store, ev, what):
         raise CalendarError(f"Failed to {what}: {error}")
 
 
-def apply_plan(store, calendar, plan):
-    if not calendar.allowsContentModifications():
-        raise CalendarError(f"Calendar {calendar.title()!r} is read-only.")
+def apply_plan(store, calendar_for, calendars, plan):
+    """`calendar_for` maps category -> calendar title; `calendars` maps title -> EKCalendar."""
+    for calendar in calendars.values():
+        if not calendar.allowsContentModifications():
+            raise CalendarError(f"Calendar {calendar.title()!r} is read-only.")
     for block in plan.creates:
         ev = EventKit.EKEvent.eventWithEventStore_(store)
-        ev.setCalendar_(calendar)
+        ev.setCalendar_(calendars[calendar_for[block.category]])
         ev.setTitle_(block.title)
         ev.setStartDate_(_nsdate(block.start))
         ev.setEndDate_(_nsdate(block.end))

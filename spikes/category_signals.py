@@ -11,10 +11,16 @@ Usage:
 
 import argparse
 import re
+import sys
 from collections import Counter
 from datetime import timedelta
+from pathlib import Path
 
-from calcopier import mac_calendar as cal
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # find calcopier when run as a script
+
+from calcopier import mac_calendar as cal  # noqa: E402
+from calcopier.categories import classify  # noqa: E402
+from calcopier.model import WorkEvent  # noqa: E402
 
 CONFERENCING = {
     "teams": r"teams\.microsoft\.com|microsoft teams",
@@ -64,14 +70,23 @@ def main():
         title = str(e.title() or "")
         words = [k for k in KEYWORDS if k in title.lower()]
 
+        has_group = any(cal._is_group(a) for a in attendees)
+        has_room = any(a.participantType() == cal.PARTICIPANT_ROOM for a in attendees)
+        category, reason = classify(WorkEvent(
+            key="", title=title, start=cal._dt(e.startDate()), end=cal._dt(e.endDate()), all_day=False,
+            my_status="", attendee_count=len(attendees), location=location, has_group=has_group,
+            has_room=has_room))
+
         start = cal._dt(e.startDate()).astimezone()
         mins = int((e.endDate().timeIntervalSince1970() - e.startDate().timeIntervalSince1970()) / 60)
         loc_short = (location[:40] + "...") if len(location) > 40 else location
-        print(f"{start:%a %m/%d %H:%M} {mins:>4}m  {title[:55]:<55}  "
-              f"att={len(attendees):<3} ext={external:<3} app={','.join(apps) or '-':<12} "
+        print(f"{start:%a %m/%d %H:%M} {mins:>4}m  {title[:50]:<50}  -> {category:<7} {reason or '':<28}"
+              f"att={len(attendees):<3} ext={external:<3} grp={'Y' if has_group else '-'} "
+              f"room={'Y' if has_room else '-'} app={','.join(apps) or '-':<12} "
               f"physical={'Y' if physical else '-'}  kw={','.join(words) or '-'}  loc={loc_short!r}")
 
         tally["meetings"] += 1
+        tally["category:" + category] += 1
         tally["app:" + (apps[0] if apps else "none")] += 1
         tally["physical location"] += physical
         tally["has external attendees"] += external > 0

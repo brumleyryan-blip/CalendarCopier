@@ -14,6 +14,10 @@ import sys
 from datetime import datetime
 
 from . import health, rules
+from .categories import AWAY, BUSY, WEBINAR
+
+# Each category gets its own iCloud calendar so it can have its own color on her phone.
+CATEGORY_CALENDARS = {WEBINAR: "CalendarCopier Webinar", AWAY: "CalendarCopier Away"}
 
 
 def _stamp():
@@ -42,20 +46,29 @@ def main(argv=None):
     try:
         store = cal.open_store()
         source = cal.find_calendar(store, args.source, args.source_account)
-        dest = cal.find_calendar(store, args.dest)
+        calendars = {args.dest: cal.find_calendar(store, args.dest)}
+        calendar_for = {BUSY: args.dest}
+        for category, title in CATEGORY_CALENDARS.items():
+            try:
+                calendars[title] = cal.find_calendar(store, title)
+                calendar_for[category] = title
+            except cal.CalendarError:
+                print(f"Note: no {title!r} calendar; {category} blocks go to {args.dest!r}.")
+                calendar_for[category] = args.dest
         start, end = cal.window(args.days)
 
         events = cal.read_work_events(store, source, start, end)
-        existing = cal.existing_blocks(store, dest, start, end)
+        existing = cal.existing_blocks(store, list(calendars.values()), start, end)
         now = datetime.now().astimezone()
-        p = rules.plan(events, existing, start, heartbeat=rules.heartbeat_block(now), now=now)
+        p = rules.plan(events, existing, start, heartbeat=rules.heartbeat_block(now), now=now,
+                       calendar_for=calendar_for)
 
         print(f"[{_stamp()}] {len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
               f"{len(p.deletes)} to remove, {p.kept} unchanged.")
         for b in p.creates:
             print(f"  + {_fmt(b.start, b.end)}  {b.title}")
         for ex, b in p.updates:
-            print(f"  ~ {_fmt(ex.start, ex.end)} -> {_fmt(b.start, b.end)}")
+            print(f"  ~ {_fmt(ex.start, ex.end)} -> {_fmt(b.start, b.end)}  {b.title}")
         for ex in p.deletes:
             print(f"  - {_fmt(ex.start, ex.end)}  {ex.title}")
         if p.deletes_suppressed:
@@ -64,7 +77,7 @@ def main(argv=None):
         if args.dry_run:
             print("Dry run: nothing written.")
         elif p.creates or p.updates or p.deletes:
-            cal.apply_plan(store, dest, p)
+            cal.apply_plan(store, calendar_for, calendars, p)
             print("Changes applied.")
     except cal.CalendarError as exc:
         error = str(exc)
