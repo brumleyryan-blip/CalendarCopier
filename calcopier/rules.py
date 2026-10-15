@@ -1,7 +1,7 @@
 """Which work events become busy blocks, and how the shared calendar is reconciled."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from .model import Block, WorkEvent, short_hash
@@ -17,6 +17,25 @@ def should_copy(event: WorkEvent) -> bool:
 
 def to_block(event: WorkEvent) -> Block:
     return Block(key=event.key, title="Busy", start=event.start, end=event.end)
+
+
+HEARTBEAT_KEY = "__calcopier_heartbeat__"
+HEARTBEAT_HASH = short_hash(HEARTBEAT_KEY)
+HEARTBEAT_LEAD = timedelta(minutes=120)     # where each refresh places the marker
+HEARTBEAT_REFRESH = timedelta(minutes=90)   # refresh once it is closer than this
+HEARTBEAT_LENGTH = timedelta(minutes=30)
+
+
+def heartbeat_block(now: datetime) -> Block:
+    """A 'Sync paused' marker kept ahead of now. If syncs stop, nothing moves it and it comes due.
+
+    `now` should be local time so the notes read naturally.
+    """
+    start = now + HEARTBEAT_LEAD
+    when = now.strftime("%a %m/%d at %I:%M %p").replace(" 0", " ")
+    notes = (f"Ryan's work calendar last updated {when}. "
+             "Busy blocks after that may be out of date; check with Ryan.")
+    return Block(key=HEARTBEAT_KEY, title="Sync paused", start=start, end=start + HEARTBEAT_LENGTH, notes=notes)
 
 
 @dataclass(frozen=True)
@@ -44,13 +63,17 @@ def _same(existing: Existing, block: Block) -> bool:
             and int(existing.end.timestamp()) == int(block.end.timestamp()))
 
 
-def plan(events, existing, window_start: datetime) -> Plan:
+def plan(events, existing, window_start: datetime, heartbeat: Block = None, now: datetime = None) -> Plan:
     """Make the shared calendar match the copyable work events within the window.
 
     Only blocks starting on or after `window_start` are ever deleted, so past days are left alone.
+    With `heartbeat` (and `now`), also keep the stale-sync marker ahead of now.
     """
     desired = {short_hash(b.key): b for b in (to_block(e) for e in events if should_copy(e))}
     result = Plan()
+
+    markers = [ex for ex in existing if ex.hash == HEARTBEAT_HASH]
+    existing = [ex for ex in existing if ex.hash != HEARTBEAT_HASH]
 
     seen = set()
     stale = []
@@ -74,4 +97,19 @@ def plan(events, existing, window_start: datetime) -> Plan:
         result.deletes_suppressed = True
     else:
         result.deletes = stale
+
+    if heartbeat is not None:
+        _plan_heartbeat(result, markers, heartbeat, now)
     return result
+
+
+def _plan_heartbeat(result: Plan, markers, heartbeat: Block, now: datetime):
+    if not markers:
+        result.creates.append(heartbeat)
+        return
+    current, extras = markers[0], markers[1:]
+    if current.start - now < HEARTBEAT_REFRESH:
+        result.updates.append((current, heartbeat))
+    else:
+        result.kept += 1
+    result.deletes.extend(extras)

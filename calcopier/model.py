@@ -28,6 +28,7 @@ class Block:
     title: str
     start: datetime
     end: datetime
+    notes: str = ""     # shown when she taps the block; the marker is appended on write
 
     @property
     def marker(self) -> str:

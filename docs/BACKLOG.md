@@ -60,6 +60,21 @@ without screenshots or memory.
   Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
   calendars). Still to verify on her phone: no alerts from default alert times.
 
+- [ ] **F4 — Failure visibility** — built, awaiting test on the Mac
+  Chosen design: option C, a 30-min "Sync paused" marker on the shared calendar. Each good run
+  keeps it ~2h ahead (moved only when <90 min away, ~48 writes/day), so if syncing stops it
+  comes due 90–120 min after the last update. Its notes give the last-update time. Any hour.
+  macOS notification on sync errors only, once per distinct error. Log trimmed past 1 MB.
+
+- [ ] **F4.1 — Rename-proof calendar lookup**
+  Find calendars by their stable identifier instead of title (a renamed Exchange calendar
+  broke the lookup during F1). Low priority while the title matches the server name.
+
+- [ ] **F3.5 — Sharing setup (no code)**
+  Decided: normal iCloud share to her Apple ID, view-only. She turns off
+  Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
+  calendars). Still to verify on her phone: no alerts from default alert times.
+
 - [ ] **F4 — Failure visibility** — design in review (mockup: stale-warning options A/B/C)
   Plan: dead-man's-switch warning block on the shared calendar (pushed ahead each good run,
   comes due if syncing stops) plus a macOS notification on sync errors.

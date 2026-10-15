@@ -116,6 +116,13 @@ def existing_blocks(store, calendar, start, end):
     return result
 
 
+DEFAULT_NOTES = "Synced from Ryan's work calendar."
+
+
+def _notes(block):
+    return f"{block.notes or DEFAULT_NOTES}\n{block.marker}"
+
+
 def _save(store, ev, what):
     ok, error = store.saveEvent_span_commit_error_(ev, EventKit.EKSpanThisEvent, False, None)
     if not ok:
@@ -132,13 +139,14 @@ def apply_plan(store, calendar, plan):
         ev.setStartDate_(_nsdate(block.start))
         ev.setEndDate_(_nsdate(block.end))
         ev.setAvailability_(EventKit.EKEventAvailabilityBusy)
-        ev.setNotes_(f"Synced from Ryan's work calendar.\n{block.marker}")
+        ev.setNotes_(_notes(block))
         _save(store, ev, f"create block at {block.start}")
     for existing, block in plan.updates:
         ev = existing.ref
         ev.setTitle_(block.title)
         ev.setStartDate_(_nsdate(block.start))
         ev.setEndDate_(_nsdate(block.end))
+        ev.setNotes_(_notes(block))
         _save(store, ev, f"update block at {block.start}")
     for existing in plan.deletes:
         ok, error = store.removeEvent_span_commit_error_(existing.ref, EventKit.EKSpanThisEvent, False, None)

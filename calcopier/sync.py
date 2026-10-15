@@ -1,7 +1,8 @@
 """Sync work meetings into the shared calendar as 'Busy' blocks.
 
 Creates new blocks, moves blocks whose meeting moved, and removes blocks for meetings that
-were cancelled or declined. Days before today are never touched.
+were cancelled or declined. Days before today are never touched. Keeps a "Sync paused" marker
+ahead of now that comes due on its own if syncing stops, and notifies on this Mac when a sync fails.
 
 Usage:
     python -m calcopier.sync --dry-run     # show what would change
@@ -12,7 +13,7 @@ import argparse
 import sys
 from datetime import datetime
 
-from . import rules
+from . import health, rules
 
 
 def _stamp():
@@ -34,6 +35,10 @@ def main(argv=None):
 
     from . import mac_calendar as cal
 
+    if not args.dry_run:
+        health.trim_log()
+
+    error = None
     try:
         store = cal.open_store()
         source = cal.find_calendar(store, args.source, args.source_account)
@@ -42,7 +47,8 @@ def main(argv=None):
 
         events = cal.read_work_events(store, source, start, end)
         existing = cal.existing_blocks(store, dest, start, end)
-        p = rules.plan(events, existing, start)
+        now = datetime.now().astimezone()
+        p = rules.plan(events, existing, start, heartbeat=rules.heartbeat_block(now), now=now)
 
         print(f"[{_stamp()}] {len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
               f"{len(p.deletes)} to remove, {p.kept} unchanged.")
@@ -61,9 +67,15 @@ def main(argv=None):
             cal.apply_plan(store, dest, p)
             print("Changes applied.")
     except cal.CalendarError as exc:
-        print(f"[{_stamp()}] Error: {exc}", file=sys.stderr)
-        return 1
-    return 0
+        error = str(exc)
+    except Exception as exc:  # unattended: report anything unexpected rather than die silently
+        error = f"Unexpected {type(exc).__name__}: {exc}"
+
+    if error:
+        print(f"[{_stamp()}] Error: {error}", file=sys.stderr)
+    if not args.dry_run:
+        health.record_result(error)
+    return 1 if error else 0
 
 
 if __name__ == "__main__":
