@@ -12,7 +12,7 @@ without screenshots or memory.
 | Window | Next 7 days |
 | Source lookup | Exchange account + server name "Calendar" (local renames of Exchange calendars revert) |
 | Status rules | Declined hidden; tentative, unanswered and organizer shown as busy; all-day skipped |
-| Self-blocks | Shown as Busy in F1; distinct label (e.g. "Focus") in F5 |
+| Self-blocks | Shown as "Busy" (no separate focus category) |
 | Wife's devices | iPhone + Google account |
 | Working-hours block | Deferred (see F7) |
 | Hosting | Local on the docked MacBook (launchd); reader/writer split so a phone or cloud reader can replace it later |
@@ -83,6 +83,10 @@ without screenshots or memory.
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
 - [ ] **F5 — Categorization v1 (rules)** — discovery: `spikes/category_signals.py`
+  Decided: categories Video call / Listening only / Away from home; anything unclear (and
+  self-blocks) stays "Busy". Title states whether she can interrupt. Manual override via a
+  [video]/[listen]/[away]/[busy] tag in the meeting title. Pending: label style (mockup
+  options 1–3) and rules from the signals survey.
   Label each block, e.g. "Video call", "Webinar (listening, can be interrupted?)",
   "Away from house", using title, attendees, location, and meeting links.
   Mockups first.
