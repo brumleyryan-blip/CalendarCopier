@@ -60,7 +60,7 @@ without screenshots or memory.
   Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
   calendars). Still to verify on her phone: no alerts from default alert times.
 
-- [ ] **F4 — Failure visibility** — built, awaiting test on the Mac
+- [x] **F4 — Failure visibility** — verified 2026-10-15: marker created, notification once per error
   Chosen design: option C, a 30-min "Sync paused" marker on the shared calendar. Each good run
   keeps it ~2h ahead (moved only when <90 min away, ~48 writes/day), so if syncing stops it
   comes due 90–120 min after the last update. Its notes give the last-update time. Any hour.
@@ -82,7 +82,7 @@ without screenshots or memory.
   rather than the calendar silently going stale. Also: look up calendars by their stable
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
-- [ ] **F5 — Categorization v1 (rules)**
+- [ ] **F5 — Categorization v1 (rules)** — discovery: `spikes/category_signals.py`
   Label each block, e.g. "Video call", "Webinar (listening, can be interrupted?)",
   "Away from house", using title, attendees, location, and meeting links.
   Mockups first.
