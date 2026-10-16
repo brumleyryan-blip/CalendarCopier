@@ -55,7 +55,7 @@ without screenshots or memory.
   `scripts/install_agent.sh` installs a launchd agent (every 600s + at login), logging to
   `~/Library/Logs/CalendarCopier/sync.log`. Docked Mac confirmed to stay awake overnight.
 
-- [ ] **F3.5 — Sharing setup (no code)**
+- [ ] **F3.5 — Sharing setup (no code)** — sharing 2026-10-16; watching alerts, latency, label clarity
   Decided: normal iCloud share to her Apple ID, view-only. She turns off
   Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
   calendars). Still to verify on her phone: no alerts from default alert times.
@@ -70,7 +70,7 @@ without screenshots or memory.
   Find calendars by their stable identifier instead of title (a renamed Exchange calendar
   broke the lookup during F1). Low priority while the title matches the server name.
 
-- [ ] **F3.5 — Sharing setup (no code)**
+- [ ] **F3.5 — Sharing setup (no code)** — sharing 2026-10-16; watching alerts, latency, label clarity
   Decided: normal iCloud share to her Apple ID, view-only. She turns off
   Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
   calendars). Still to verify on her phone: no alerts from default alert times.
