@@ -5,7 +5,7 @@ conferencing app found in location/notes, whether the location looks like a phys
 internal vs external attendee counts, and title keywords. Ends with a tally.
 
 Usage:
-    python spikes/category_signals.py                 # past 30 days + next 14
+    python spikes/category_signals.py                 # past 30 days + next 21
     python spikes/category_signals.py --past 60 --days 14
 """
 
@@ -46,7 +46,7 @@ def main():
     parser.add_argument("--source", default="Calendar")
     parser.add_argument("--source-account", default="Exchange")
     parser.add_argument("--past", type=int, default=30)
-    parser.add_argument("--days", type=int, default=14)
+    parser.add_argument("--days", type=int, default=21)
     args = parser.parse_args()
 
     store = cal.open_store()
