@@ -29,8 +29,9 @@ class ShouldCopyTest(unittest.TestCase):
 
 class BlockTest(unittest.TestCase):
     def test_block_hides_title(self):
-        block = to_block(event(title="Security Sync - Ryan"))
+        block = to_block(event(title="Bepco - Phone # Porting"))
         self.assertEqual(block.title, "Busy")
+        self.assertNotIn("Bepco", block.notes)
         self.assertEqual((block.start, block.end), (T0, T0 + timedelta(minutes=30)))
 
     def test_marker_round_trips_and_hides_key(self):

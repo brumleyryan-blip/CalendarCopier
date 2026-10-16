@@ -82,18 +82,23 @@ without screenshots or memory.
   rather than the calendar silently going stale. Also: look up calendars by their stable
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
-- [ ] **F5 — Categorization v1 (rules)** — webinar + away built, awaiting test on the Mac
-  Labels: "Webinar - Off Camera", "Away from Home", "Busy" (fallback, incl. self-blocks).
-  Single calendar ("CalendarCopier"); category shown in the title, reason in the notes.
-  (Per-category calendars for color were considered and dropped: not worth sharing 4-5
-  calendars.) A category change updates the block's title in place. Rules in order: [tag] override ([webinar]/[listen]/[away]/[busy]) → webinar
-  keywords (webinar, AHOD, all hands, town hall, office hours, training, enablement,
-  lunch & learn) → away (street address, booked room, onsite/visit/lunch/dinner/offsite/
-  travel/flight/in person) → webinar by size (50+ attendees or a distribution list).
+- [ ] **F5 — Categorization v1 (rules)** — built, tuning on real data
+  Labels: "Webinar - Off Camera", "Away from Home", "Video Call - On Camera", "Busy".
+  Single calendar ("CalendarCopier"); category in the title, reason in the notes.
+  (Per-category calendars for color were considered and dropped.) Rules in order:
+  1. [tag] override: [webinar]/[listen]/[away]/[video]/[busy]
+  2. Away: street address in location, or a booked conference room
+  3. Webinar: keywords (webinar, AHOD, all hands, town hall, office hours, training,
+     enablement, lunch & learn); livestream links (livestreaming/partnersuccess.cisco.com,
+     Cisco TV, location "Webinar"); 50+ attendees; distribution list with <=3 attendees
+  4. Video: "red river" or "sync" in title; Jacob Shaver attending
+  5. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
+  6. Busy
+  Learned 2026-10-16: distribution lists alone over-matched (team meetings use them);
+  no meetings had external attendees, so customer detection is deferred.
 
-- [ ] **F5b — Video call category**
-  "Customer Call - On Video". Refine from `spikes/category_signals.py`
-  output (meeting app, external attendees).
+- [ ] **F5b — Customer calls**
+  "Customer Call - On Video" once external-attendee meetings show up in the data.
 
 - [ ] **F6 — Categorization v2 (smarter/overrides)**
   Manual override keywords and/or an LLM classifier for ambiguous invites.

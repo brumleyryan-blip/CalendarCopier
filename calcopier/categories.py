@@ -4,23 +4,31 @@ import re
 
 from .model import WorkEvent
 
-BUSY, WEBINAR, AWAY = "busy", "webinar", "away"
+BUSY, WEBINAR, AWAY, VIDEO = "busy", "webinar", "away", "video"
 
 LABELS = {
     BUSY: "Busy",
     WEBINAR: "Webinar - Off Camera",
     AWAY: "Away from Home",
+    VIDEO: "Video Call - On Camera",
 }
 
 # [tag] in the meeting title forces a category.
-OVERRIDES = {"busy": BUSY, "webinar": WEBINAR, "listen": WEBINAR, "away": AWAY}
+OVERRIDES = {"busy": BUSY, "webinar": WEBINAR, "listen": WEBINAR, "away": AWAY, "video": VIDEO}
 OVERRIDE_RE = re.compile(r"\[(" + "|".join(OVERRIDES) + r")\]", re.I)
 
 WEBINAR_WORDS = ["webinar", "ahod", "all hands", "all-hands", "town hall", "townhall", "office hours",
                  "training", "enablement", "lunch & learn", "lunch and learn", "lunch n learn"]
 AWAY_WORDS = ["onsite", "on-site", "on site", "visit", "lunch", "dinner", "offsite", "off-site",
               "travel", "flight", "in person", "in-person"]
+# Broadcast/livestream links: watched, not joined on camera.
+LIVESTREAM_HINTS = ["livestreaming.cisco.com", "partnersuccess.cisco.com", "cisco tv"]
 LARGE_AUDIENCE = 50
+BROADCAST_MAX_ATTENDEES = 3   # a distribution list plus little more than you = a broadcast invite
+
+# Meetings where Ryan is expected on camera.
+VIDEO_TITLE_WORDS = ["red river", "sync"]
+VIDEO_PEOPLE = ["jacob shaver"]
 STREET = re.compile(r"\b\d{2,6}\s+[\w .'-]+\b(st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|"
                     r"ln|lane|way|pkwy|parkway|hwy|highway|ct|court|pl|place|suite|ste)\b\.?", re.I)
 
@@ -42,15 +50,25 @@ def classify(event: WorkEvent):
     if event.has_room:
         return AWAY, "meeting room booked"
 
-    # Webinar keywords before away keywords so "Lunch & Learn" isn't read as an away lunch.
+    # Webinars before video, so a big all-hands with a teammate in it stays off camera.
     if _has_word(event.title, WEBINAR_WORDS):
-        return WEBINAR, "large session"
-    if _has_word(event.title, AWAY_WORDS):
-        return AWAY, "in-person meeting"
-
+        return WEBINAR, "webinar-style session"
+    where = f"{event.location} {event.notes}".lower()
+    if any(h in where for h in LIVESTREAM_HINTS) or _has_word(event.location, ["webinar"]):
+        return WEBINAR, "livestream"
     if event.attendee_count >= LARGE_AUDIENCE:
         return WEBINAR, "large audience"
-    if event.has_group:
-        return WEBINAR, "sent to a distribution list"
+    if event.has_group and event.attendee_count <= BROADCAST_MAX_ATTENDEES:
+        return WEBINAR, "broadcast to a distribution list"
+
+    if _has_word(event.title, VIDEO_TITLE_WORDS):
+        return VIDEO, "team call"
+    names = " | ".join(event.attendee_names).lower()
+    if any(p in names for p in VIDEO_PEOPLE):
+        return VIDEO, "team call"
+
+    # Away keywords last among the specific rules so "Lunch & Learn" stays a webinar.
+    if _has_word(event.title, AWAY_WORDS):
+        return AWAY, "in-person meeting"
 
     return BUSY, ""

@@ -110,6 +110,7 @@ def read_work_events(store, calendar, start, end):
             notes=str(e.notes() or ""),
             has_group=any(_is_group(a) for a in attendees),
             has_room=any(a.participantType() == PARTICIPANT_ROOM for a in attendees),
+            attendee_names=tuple(str(a.name() or "") for a in attendees),
         ))
     return result
 

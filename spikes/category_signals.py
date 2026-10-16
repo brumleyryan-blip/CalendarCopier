@@ -74,8 +74,9 @@ def main():
         has_room = any(a.participantType() == cal.PARTICIPANT_ROOM for a in attendees)
         category, reason = classify(WorkEvent(
             key="", title=title, start=cal._dt(e.startDate()), end=cal._dt(e.endDate()), all_day=False,
-            my_status="", attendee_count=len(attendees), location=location, has_group=has_group,
-            has_room=has_room))
+            my_status="", attendee_count=len(attendees), location=location,
+            notes=str(e.notes() or ""), has_group=has_group, has_room=has_room,
+            attendee_names=tuple(str(a.name() or "") for a in attendees)))
 
         start = cal._dt(e.startDate()).astimezone()
         mins = int((e.endDate().timeIntervalSince1970() - e.startDate().timeIntervalSince1970()) / 60)
