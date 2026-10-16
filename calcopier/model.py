@@ -31,7 +31,6 @@ class Block:
     start: datetime
     end: datetime
     notes: str = ""     # shown when she taps the block; the marker is appended on write
-    category: str = "busy"
 
     @property
     def marker(self) -> str:

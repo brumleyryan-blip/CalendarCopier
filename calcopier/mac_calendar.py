@@ -114,15 +114,14 @@ def read_work_events(store, calendar, start, end):
     return result
 
 
-def existing_blocks(store, calendars, start, end):
-    """Blocks this tool already wrote, across its calendars. Unmarked events are never touched."""
+def existing_blocks(store, calendar, start, end):
+    """Blocks this tool already wrote. Unmarked events are never returned, so never touched."""
     result = []
-    for calendar in calendars:
-        for e in _events(store, calendar, start, end):
-            h = marker_in(str(e.notes() or ""))
-            if h:
-                result.append(Existing(hash=h, title=str(e.title() or ""), start=_dt(e.startDate()),
-                                       end=_dt(e.endDate()), calendar=str(calendar.title()), ref=e))
+    for e in _events(store, calendar, start, end):
+        h = marker_in(str(e.notes() or ""))
+        if h:
+            result.append(Existing(hash=h, title=str(e.title() or ""),
+                                   start=_dt(e.startDate()), end=_dt(e.endDate()), ref=e))
     return result
 
 
@@ -139,14 +138,12 @@ def _save(store, ev, what):
         raise CalendarError(f"Failed to {what}: {error}")
 
 
-def apply_plan(store, calendar_for, calendars, plan):
-    """`calendar_for` maps category -> calendar title; `calendars` maps title -> EKCalendar."""
-    for calendar in calendars.values():
-        if not calendar.allowsContentModifications():
-            raise CalendarError(f"Calendar {calendar.title()!r} is read-only.")
+def apply_plan(store, calendar, plan):
+    if not calendar.allowsContentModifications():
+        raise CalendarError(f"Calendar {calendar.title()!r} is read-only.")
     for block in plan.creates:
         ev = EventKit.EKEvent.eventWithEventStore_(store)
-        ev.setCalendar_(calendars[calendar_for[block.category]])
+        ev.setCalendar_(calendar)
         ev.setTitle_(block.title)
         ev.setStartDate_(_nsdate(block.start))
         ev.setEndDate_(_nsdate(block.end))

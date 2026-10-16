@@ -84,15 +84,15 @@ without screenshots or memory.
 
 - [ ] **F5 — Categorization v1 (rules)** — webinar + away built, awaiting test on the Mac
   Labels: "Webinar - Off Camera", "Away from Home", "Busy" (fallback, incl. self-blocks).
-  Color-coded via one iCloud calendar per category: "CalendarCopier Webinar",
-  "CalendarCopier Away" (busy stays in "CalendarCopier"); missing calendars fall back to the
-  main one. Rules in order: [tag] override ([webinar]/[listen]/[away]/[busy]) → webinar
+  Single calendar ("CalendarCopier"); category shown in the title, reason in the notes.
+  (Per-category calendars for color were considered and dropped: not worth sharing 4-5
+  calendars.) A category change updates the block's title in place. Rules in order: [tag] override ([webinar]/[listen]/[away]/[busy]) → webinar
   keywords (webinar, AHOD, all hands, town hall, office hours, training, enablement,
   lunch & learn) → away (street address, booked room, onsite/visit/lunch/dinner/offsite/
   travel/flight/in person) → webinar by size (50+ attendees or a distribution list).
 
 - [ ] **F5b — Video call category**
-  "Customer Call - On Video" in its own color. Refine from `spikes/category_signals.py`
+  "Customer Call - On Video". Refine from `spikes/category_signals.py`
   output (meeting app, external attendees).
 
 - [ ] **F6 — Categorization v2 (smarter/overrides)**

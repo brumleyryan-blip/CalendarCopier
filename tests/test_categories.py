@@ -62,7 +62,7 @@ class ClassifyTest(unittest.TestCase):
 class BlockLabelTest(unittest.TestCase):
     def test_labels_and_reason(self):
         b = to_block(ev(title="All Hands"))
-        self.assertEqual((b.title, b.category), ("Webinar - Off Camera", WEBINAR))
+        self.assertEqual(b.title, "Webinar - Off Camera")
         self.assertIn("large session", b.notes)
         self.assertEqual(to_block(ev(room=True)).title, "Away from Home")
         self.assertEqual(to_block(ev()).title, "Busy")
@@ -72,38 +72,20 @@ class BlockLabelTest(unittest.TestCase):
         self.assertNotIn("Bepco", b.title + b.notes)
 
 
-CALS = {BUSY: "CalendarCopier", WEBINAR: "CalendarCopier Webinar", AWAY: "CalendarCopier Away"}
+def existing(key, title):
+    return Existing(hash=short_hash(key), title=title, start=T0, end=T0 + timedelta(minutes=30))
 
 
-def existing(key, calendar, title):
-    return Existing(hash=short_hash(key), title=title, start=T0, end=T0 + timedelta(minutes=30), calendar=calendar)
+class RecategorizeTest(unittest.TestCase):
+    def test_new_blocks_get_category_titles(self):
+        p = plan([ev(key="a", title="All Hands"), ev(key="b")], [], TODAY)
+        self.assertEqual(sorted(b.title for b in p.creates), ["Busy", "Webinar - Off Camera"])
 
-
-class CalendarRoutingTest(unittest.TestCase):
-    def test_new_blocks_carry_category(self):
-        p = plan([ev(key="a", title="All Hands"), ev(key="b")], [], TODAY, calendar_for=CALS)
-        self.assertEqual(sorted(b.category for b in p.creates), [BUSY, WEBINAR])
-
-    def test_recategorized_block_moves_calendars(self):
-        old = existing("a", "CalendarCopier", "Busy")
-        p = plan([ev(key="a", title="All Hands")], [old], TODAY, calendar_for=CALS)
-        self.assertEqual([ex.calendar for ex in p.deletes], ["CalendarCopier"])
-        self.assertEqual([(b.category, b.title) for b in p.creates], [(WEBINAR, "Webinar - Off Camera")])
-
-    def test_settled_block_left_alone(self):
-        ok = existing("a", "CalendarCopier Webinar", "Webinar - Off Camera")
-        p = plan([ev(key="a", title="All Hands")], [ok], TODAY, calendar_for=CALS)
-        self.assertEqual((p.creates, p.updates, p.deletes, p.kept), ([], [], [], 1))
-
-    def test_stray_copy_in_wrong_calendar_removed_but_right_one_kept(self):
-        right = existing("a", "CalendarCopier Webinar", "Webinar - Off Camera")
-        stray = existing("a", "CalendarCopier", "Busy")
-        p = plan([ev(key="a", title="All Hands")], [stray, right], TODAY, calendar_for=CALS)
-        self.assertEqual((len(p.creates), p.kept, [ex.calendar for ex in p.deletes]), (0, 1, ["CalendarCopier"]))
-
-    def test_missing_category_calendar_falls_back_in_place(self):
-        fallback = {BUSY: "CalendarCopier", WEBINAR: "CalendarCopier", AWAY: "CalendarCopier"}
-        old = existing("a", "CalendarCopier", "Busy")
-        p = plan([ev(key="a", title="All Hands")], [old], TODAY, calendar_for=fallback)
+    def test_category_change_updates_title_in_place(self):
+        p = plan([ev(key="a", title="All Hands")], [existing("a", "Busy")], TODAY)
         self.assertEqual((p.creates, p.deletes), ([], []))
         self.assertEqual(p.updates[0][1].title, "Webinar - Off Camera")
+
+    def test_settled_block_left_alone(self):
+        p = plan([ev(key="a", title="All Hands")], [existing("a", "Webinar - Off Camera")], TODAY)
+        self.assertEqual((p.creates, p.updates, p.deletes, p.kept), ([], [], [], 1))
