@@ -36,14 +36,15 @@ def classify(event: WorkEvent):
     if tag:
         return OVERRIDES[tag.group(1).lower()], "set manually"
 
-    # Webinar keywords first so "Lunch & Learn" isn't read as an away lunch.
-    if _has_word(event.title, WEBINAR_WORDS):
-        return WEBINAR, "large session"
-
+    # A real place beats any keyword: an in-person lunch & learn still means you're out.
     if STREET.search(event.location):
         return AWAY, "in-person location"
     if event.has_room:
         return AWAY, "meeting room booked"
+
+    # Webinar keywords before away keywords so "Lunch & Learn" isn't read as an away lunch.
+    if _has_word(event.title, WEBINAR_WORDS):
+        return WEBINAR, "large session"
     if _has_word(event.title, AWAY_WORDS):
         return AWAY, "in-person meeting"
 

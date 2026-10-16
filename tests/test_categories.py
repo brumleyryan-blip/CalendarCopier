@@ -36,8 +36,15 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(cat(title="Customer onsite - Bepco"), AWAY)
         self.assertEqual(cat(title="Lunch w/ Jacob"), AWAY)
 
-    def test_away_beats_size_but_not_webinar_words(self):
-        self.assertEqual(cat(title="Lunch & Learn", location="100 Elm St"), WEBINAR)
+    def test_address_or_room_beats_webinar_words(self):
+        self.assertEqual(cat(title="Netsync/Cisco - AI and Splunk Lunch & Learn",
+                             location="5301 Alpha Rd, Dallas, TX"), AWAY)
+        self.assertEqual(cat(title="Enablement session", room=True), AWAY)
+
+    def test_webinar_words_beat_away_words(self):
+        self.assertEqual(cat(title="Lunch & Learn: Gong"), WEBINAR)
+
+    def test_away_beats_size(self):
         self.assertEqual(cat(title="Team offsite", group=True), AWAY)
 
     def test_meeting_links_are_not_addresses(self):
