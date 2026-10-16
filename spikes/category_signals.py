@@ -61,7 +61,7 @@ def main():
         me = next((a for a in attendees if a.isCurrentUser()), None)
         my_domain = domain(me.URL()) if me else None
         domains = [domain(a.URL()) for a in attendees]
-        external = sum(1 for d in domains if d and my_domain and d != my_domain)
+        external = sum(cal._is_external(a) for a in attendees)
 
         text = " ".join(str(x or "") for x in (e.location(), e.notes(), e.URL()))
         apps = [name for name, pat in CONFERENCING.items() if re.search(pat, text, re.I)]
@@ -76,7 +76,8 @@ def main():
             key="", title=title, start=cal._dt(e.startDate()), end=cal._dt(e.endDate()), all_day=False,
             my_status="", attendee_count=len(attendees), location=location,
             notes=str(e.notes() or ""), has_group=has_group, has_room=has_room,
-            attendee_names=tuple(str(a.name() or "") for a in attendees)))
+            attendee_names=tuple(str(a.name() or "") for a in attendees),
+            external_count=sum(cal._is_external(a) for a in attendees)))
 
         start = cal._dt(e.startDate()).astimezone()
         mins = int((e.endDate().timeIntervalSince1970() - e.startDate().timeIntervalSince1970()) / 60)

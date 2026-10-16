@@ -14,7 +14,8 @@ PARTICIPANT_STATUS = {
     4: "tentative", 5: "delegated", 6: "completed", 7: "in process",
 }
 FULL_ACCESS = 3
-PARTICIPANT_ROOM, PARTICIPANT_GROUP = 2, 4
+PARTICIPANT_PERSON, PARTICIPANT_ROOM, PARTICIPANT_GROUP = 1, 2, 4
+INTERNAL_DOMAINS = {"cisco.com"}
 
 
 class CalendarError(RuntimeError):
@@ -92,6 +93,15 @@ def _is_group(attendee):
     return attendee.participantType() == PARTICIPANT_GROUP or name.startswith("group.")
 
 
+def _is_external(attendee):
+    """A person (not a room or list) whose email is outside the company."""
+    if attendee.participantType() in (PARTICIPANT_ROOM, PARTICIPANT_GROUP):
+        return False
+    email = str(attendee.URL() or "").lower()
+    domain = email.rsplit("@", 1)[-1] if "@" in email else ""
+    return bool(domain) and domain not in INTERNAL_DOMAINS
+
+
 def read_work_events(store, calendar, start, end):
     result = []
     for e in _events(store, calendar, start, end):
@@ -111,6 +121,7 @@ def read_work_events(store, calendar, start, end):
             has_group=any(_is_group(a) for a in attendees),
             has_room=any(a.participantType() == PARTICIPANT_ROOM for a in attendees),
             attendee_names=tuple(str(a.name() or "") for a in attendees),
+            external_count=sum(_is_external(a) for a in attendees),
         ))
     return result
 

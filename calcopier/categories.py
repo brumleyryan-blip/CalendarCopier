@@ -4,17 +4,19 @@ import re
 
 from .model import WorkEvent
 
-BUSY, WEBINAR, AWAY, VIDEO = "busy", "webinar", "away", "video"
+BUSY, WEBINAR, AWAY, VIDEO, CUSTOMER = "busy", "webinar", "away", "video", "customer"
 
 LABELS = {
     BUSY: "Busy",
     WEBINAR: "Webinar - Off Camera",
     AWAY: "Away from Home",
     VIDEO: "Video Call - On Camera",
+    CUSTOMER: "Customer Call - On Video",
 }
 
 # [tag] in the meeting title forces a category.
-OVERRIDES = {"busy": BUSY, "webinar": WEBINAR, "listen": WEBINAR, "away": AWAY, "video": VIDEO}
+OVERRIDES = {"busy": BUSY, "webinar": WEBINAR, "listen": WEBINAR, "away": AWAY, "video": VIDEO,
+             "customer": CUSTOMER}
 OVERRIDE_RE = re.compile(r"\[(" + "|".join(OVERRIDES) + r")\]", re.I)
 
 WEBINAR_WORDS = ["webinar", "ahod", "all hands", "all-hands", "town hall", "townhall", "office hours",
@@ -26,8 +28,9 @@ LIVESTREAM_HINTS = ["livestreaming.cisco.com", "partnersuccess.cisco.com", "cisc
 LARGE_AUDIENCE = 50
 BROADCAST_MAX_ATTENDEES = 3   # a distribution list plus little more than you = a broadcast invite
 
-# Calendar reminders that aren't really meetings (e.g. "... | Due by Noon Thursday"). Not copied.
-REMINDER_WORDS = ["due by", "friday eod"]
+# Not copied at all: reminders that aren't really meetings, and time off (teammates' OOO
+# invites, or my own full-day block so nobody books over it).
+SKIP_WORDS = ["due by", "friday eod", "ooo", "pto", "vto", "out of office"]
 
 # Meetings where Ryan is expected on camera.
 VIDEO_TITLE_WORDS = ["red river", "sync"]
@@ -41,10 +44,10 @@ def _has_word(text, words):
     return next((w for w in words if re.search(r"(?<!\w)" + re.escape(w) + r"(?!\w)", text)), None)
 
 
-def is_reminder(event: WorkEvent) -> bool:
+def is_skipped(event: WorkEvent) -> bool:
     if OVERRIDE_RE.search(event.title):  # a [tag] means it's a real meeting
         return False
-    return _has_word(event.title, REMINDER_WORDS) is not None
+    return _has_word(event.title, SKIP_WORDS) is not None
 
 
 def classify(event: WorkEvent):
@@ -70,14 +73,18 @@ def classify(event: WorkEvent):
     if event.has_group and event.attendee_count <= BROADCAST_MAX_ATTENDEES:
         return WEBINAR, "broadcast to a distribution list"
 
+    # After webinar keywords so "Lunch & Learn" stays a webinar; before customer so a
+    # customer lunch reads as away.
+    if _has_word(event.title, AWAY_WORDS):
+        return AWAY, "in-person meeting"
+
+    if event.external_count:
+        return CUSTOMER, "outside attendees"
+
     if _has_word(event.title, VIDEO_TITLE_WORDS):
         return VIDEO, "team call"
     names = " | ".join(event.attendee_names).lower()
     if any(p in names for p in VIDEO_PEOPLE):
         return VIDEO, "team call"
-
-    # Away keywords last among the specific rules so "Lunch & Learn" stays a webinar.
-    if _has_word(event.title, AWAY_WORDS):
-        return AWAY, "in-person meeting"
 
     return BUSY, ""

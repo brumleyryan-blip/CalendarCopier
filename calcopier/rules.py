@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
-from .categories import LABELS, classify, is_reminder
+from .categories import LABELS, classify, is_skipped
 from .model import Block, WorkEvent, short_hash
 
 
@@ -14,7 +14,7 @@ def should_copy(event: WorkEvent) -> bool:
         return False
     if event.my_status == "declined":
         return False
-    if is_reminder(event):  # nudges like "Due by Noon Thursday" don't take up time
+    if is_skipped(event):  # reminders and time off don't take up meeting time
         return False
     return True  # accepted, tentative, no response, organizer
 

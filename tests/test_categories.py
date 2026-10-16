@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from calcopier.categories import AWAY, BUSY, VIDEO, WEBINAR, classify
+from calcopier.categories import AWAY, BUSY, CUSTOMER, VIDEO, WEBINAR, classify
 from calcopier.model import WorkEvent, short_hash
 from calcopier.rules import Existing, plan, to_block
 
@@ -10,10 +10,11 @@ TODAY = T0.replace(hour=5)
 
 
 def ev(title="Pipeline review", attendees=4, location="", group=False, room=False, key="k", status="accepted",
-       notes="", names=()):
+       notes="", names=(), external=0):
     return WorkEvent(key=key, title=title, start=T0, end=T0 + timedelta(minutes=30), all_day=False,
                      my_status=status, attendee_count=attendees, location=location, notes=notes,
-                     has_group=group, has_room=room, attendee_names=tuple(names))
+                     has_group=group, has_room=room, attendee_names=tuple(names),
+                     external_count=external)
 
 
 def cat(**kw):
@@ -72,7 +73,8 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(cat(title="All Hands [busy]"), BUSY)
         self.assertEqual(cat(title="Pipeline review [AWAY]"), AWAY)
         self.assertEqual(cat(title="Red River call [busy]"), BUSY)
-        self.assertEqual(cat(title="Partner call [video]"), VIDEO)
+        self.assertEqual(cat(title="Partner call [video]", external=2), VIDEO)
+        self.assertEqual(cat(title="Partner call [customer]"), CUSTOMER)
         self.assertEqual(cat(title="Deal review [listen]"), WEBINAR)
         self.assertEqual(classify(ev(title="x [away]"))[1], "set manually")
 
@@ -89,6 +91,15 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(cat(title="Global Sales All Hands", attendees=36, names=("Jacob Shaver",)), WEBINAR)
         self.assertEqual(cat(title="Red River enablement"), WEBINAR)
         self.assertEqual(cat(title="Red River lunch", location="100 Main St"), AWAY)
+
+    def test_customer_calls(self):
+        self.assertEqual(cat(title="Bepco - Phone # Porting", external=2), CUSTOMER)
+        self.assertEqual(cat(title="Red River sync", external=1, names=("Jacob Shaver",)), CUSTOMER)
+
+    def test_customer_rule_ranks_below_webinar_and_away(self):
+        self.assertEqual(cat(title="EN Tools and Tips - OP SE Office Hours", attendees=71, external=1), WEBINAR)
+        self.assertEqual(cat(title="Lunch w/ Bepco", external=2), AWAY)
+        self.assertEqual(cat(title="Bepco QBR", external=3, location="100 Main St"), AWAY)
 
     def test_sync_is_whole_word(self):
         self.assertEqual(cat(title="Async updates"), BUSY)
@@ -110,6 +121,17 @@ class ReminderTest(unittest.TestCase):
     def test_ordinary_meetings_still_copied(self):
         from calcopier.rules import should_copy
         self.assertTrue(should_copy(ev(title="EOD review with team")))
+
+    def test_time_off_not_copied(self):
+        from calcopier.rules import should_copy
+        for title in ["Jacob OOO", "Jamey PTO", "Derrick - VTO", "Shon B PTO - - Backup Corina", "Out of Office",
+                      "Ryan PTO"]:
+            self.assertFalse(should_copy(ev(title=title)), title)
+
+    def test_time_off_words_are_whole_words(self):
+        from calcopier.rules import should_copy
+        self.assertTrue(should_copy(ev(title="Photo shoot")))
+        self.assertTrue(should_copy(ev(title="Cooper review")))
 
 
 class BlockLabelTest(unittest.TestCase):

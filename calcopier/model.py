@@ -22,6 +22,7 @@ class WorkEvent:
     has_group: bool = False   # a distribution list is among the invitees
     has_room: bool = False    # a conference room is booked
     attendee_names: tuple = ()
+    external_count: int = 0   # people invited from outside the company
 
 
 @dataclass(frozen=True)

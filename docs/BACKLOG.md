@@ -66,7 +66,7 @@ without screenshots or memory.
   comes due 90–120 min after the last update. Its notes give the last-update time. Any hour.
   macOS notification on sync errors only, once per distinct error. Log trimmed past 1 MB.
 
-- [ ] **F4.1 — Rename-proof calendar lookup**
+- [ ] **F4.1 — Rename-proof calendar lookup** — parked; F4 alerts catch a rename quickly
   Find calendars by their stable identifier instead of title (a renamed Exchange calendar
   broke the lookup during F1). Low priority while the title matches the server name.
 
@@ -91,15 +91,18 @@ without screenshots or memory.
   3. Webinar: keywords (webinar, AHOD, all hands, town hall, office hours, training,
      enablement, lunch & learn); livestream links (livestreaming/partnersuccess.cisco.com,
      Cisco TV, location "Webinar"); 50+ attendees; distribution list with <=3 attendees
-  4. Video: "red river" or "sync" in title; Jacob Shaver attending
-  5. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
-  6. Busy
-  Not copied at all: reminders ("due by", "Friday EOD") unless [tagged].
+  4. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
+  5. Customer: any attendee outside @cisco.com -> "Customer Call - On Video"
+  6. Video: "red river" or "sync" in title; Jacob Shaver attending
+  7. Busy
+  Not copied at all: reminders ("due by", "Friday EOD") and time off (OOO, PTO, VTO,
+  out of office), all-day or timed, unless [tagged].
   Learned 2026-10-16: distribution lists alone over-matched (team meetings use them);
   no meetings had external attendees, so customer detection is deferred.
 
-- [ ] **F5b — Customer calls**
-  "Customer Call - On Video" once external-attendee meetings show up in the data.
+- [ ] **F5b — Customer calls** — built, awaiting a real external meeting to verify
+  Any attendee outside @cisco.com (people only, not rooms or lists), ranked below webinar
+  and away rules. Partners count as outside too.
 
 - [ ] **F6 — Categorization v2 (smarter/overrides)**
   Manual override keywords and/or an LLM classifier for ambiguous invites.
