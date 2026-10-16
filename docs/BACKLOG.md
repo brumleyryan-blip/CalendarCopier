@@ -82,7 +82,7 @@ without screenshots or memory.
   rather than the calendar silently going stale. Also: look up calendars by their stable
   identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
 
-- [ ] **F5 — Categorization v1 (rules)** — built, tuning on real data
+- [x] **F5 — Categorization v1 (rules)** — verified 2026-10-16 on real meetings
   Labels: "Webinar - Off Camera", "Away from Home", "Video Call - On Camera", "Busy".
   Single calendar ("CalendarCopier"); category in the title, reason in the notes.
   (Per-category calendars for color were considered and dropped.) Rules in order:
