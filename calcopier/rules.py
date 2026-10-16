@@ -1,7 +1,7 @@
 """Which work events become busy blocks, and how the shared calendar is reconciled."""
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -17,6 +17,9 @@ def should_copy(event: WorkEvent) -> bool:
     if is_skipped(event):  # reminders and time off don't take up meeting time
         return False
     return True  # accepted, tentative, no response, organizer
+
+
+AUTO_TITLES = set(LABELS.values())
 
 
 def to_block(event: WorkEvent) -> Block:
@@ -92,6 +95,8 @@ def plan(events, existing, window_start: datetime, heartbeat: Block = None, now:
             continue
         match, duplicates = found[0], found[1:]
         stale.extend(duplicates)
+        if match.title not in AUTO_TITLES:  # renamed by hand on the shared calendar: keep it
+            block = replace(block, title=match.title)
         if _same(match, block):
             result.kept += 1
         else:

@@ -93,8 +93,17 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(cat(title="Red River lunch", location="100 Main St"), AWAY)
 
     def test_customer_calls(self):
-        self.assertEqual(cat(title="Bepco - Phone # Porting", external=2), CUSTOMER)
-        self.assertEqual(cat(title="Red River sync", external=1, names=("Jacob Shaver",)), CUSTOMER)
+        self.assertEqual(cat(title="Bepco - Phone # Porting", external=3), CUSTOMER)
+        self.assertEqual(cat(title="Steve & Cisco 1:1", external=1), CUSTOMER)
+        self.assertEqual(cat(title="Cisco Compute w/ Nutanix Tiger Team Call", group=True, external=4), CUSTOMER)
+
+    def test_team_calls_beat_customer(self):
+        self.assertEqual(cat(title="Red River FY27 Weekly Commit Call", attendees=26, external=1), VIDEO)
+        self.assertEqual(cat(title="Deal review", names=("Jacob Shaver",), external=2), VIDEO)
+
+    def test_one_outsider_on_a_list_invite_is_internal(self):
+        self.assertEqual(cat(title="NPG Kick-Off", attendees=31, group=True, external=1), BUSY)
+        self.assertEqual(cat(title="BP Learning Circle", attendees=7, group=True, external=1), BUSY)
 
     def test_customer_rule_ranks_below_webinar_and_away(self):
         self.assertEqual(cat(title="EN Tools and Tips - OP SE Office Hours", attendees=71, external=1), WEBINAR)
@@ -164,3 +173,14 @@ class RecategorizeTest(unittest.TestCase):
     def test_settled_block_left_alone(self):
         p = plan([ev(key="a", title="All Hands")], [existing("a", "Webinar - Off Camera")], TODAY)
         self.assertEqual((p.creates, p.updates, p.deletes, p.kept), ([], [], [], 1))
+
+    def test_hand_edited_title_is_kept(self):
+        p = plan([ev(key="a", title="AI Easy Button")], [existing("a", "Busy webinar")], TODAY)
+        self.assertEqual((p.updates, p.kept), ([], 1))
+
+    def test_hand_edited_title_kept_when_meeting_moves(self):
+        moved = WorkEvent(key="a", title="AI Easy Button", start=T0 + timedelta(hours=1),
+                          end=T0 + timedelta(hours=2), all_day=False, my_status="accepted", attendee_count=34)
+        p = plan([moved], [existing("a", "Busy webinar")], TODAY)
+        self.assertEqual(p.updates[0][1].title, "Busy webinar")
+        self.assertEqual(p.updates[0][1].start, T0 + timedelta(hours=1))

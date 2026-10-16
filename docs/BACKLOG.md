@@ -92,17 +92,19 @@ without screenshots or memory.
      enablement, lunch & learn); livestream links (livestreaming/partnersuccess.cisco.com,
      Cisco TV, location "Webinar"); 50+ attendees; distribution list with <=3 attendees
   4. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
-  5. Customer: any attendee outside @cisco.com -> "Customer Call - On Video"
-  6. Video: "red river" or "sync" in title; Jacob Shaver attending
+  5. Video: "red river" or "sync" in title; Jacob Shaver attending
+  6. Customer: outside @cisco.com attendee(s) -> "Customer Call - On Video"
+     (2+ needed when a distribution list is invited)
   7. Busy
+  Hand edits: a block renamed on the shared calendar keeps its title (times still sync);
+  delete it to get the automatic label back.
   Not copied at all: reminders ("due by", "Friday EOD") and time off (OOO, PTO, VTO,
   out of office), all-day or timed, unless [tagged].
   Learned 2026-10-16: distribution lists alone over-matched (team meetings use them);
   no meetings had external attendees, so customer detection is deferred.
 
-- [ ] **F5b — Customer calls** — built, awaiting a real external meeting to verify
-  Any attendee outside @cisco.com (people only, not rooms or lists), ranked below webinar
-  and away rules. Partners count as outside too.
+- [x] **F5b — Customer calls** — verified 2026-10-16 against a month of meetings
+  Outside @cisco.com people (not rooms or lists); partners count too. One label for all.
 
 - [ ] **F6 — Categorization v2 (smarter/overrides)**
   Manual override keywords and/or an LLM classifier for ambiguous invites.

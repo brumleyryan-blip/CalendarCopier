@@ -78,13 +78,16 @@ def classify(event: WorkEvent):
     if _has_word(event.title, AWAY_WORDS):
         return AWAY, "in-person meeting"
 
-    if event.external_count:
-        return CUSTOMER, "outside attendees"
-
+    # Known team calls before customer: both mean on camera, and team calls often have one
+    # outside guest.
     if _has_word(event.title, VIDEO_TITLE_WORDS):
         return VIDEO, "team call"
     names = " | ".join(event.attendee_names).lower()
     if any(p in names for p in VIDEO_PEOPLE):
         return VIDEO, "team call"
+
+    # An internal list invite with one stray outside address is still an internal meeting.
+    if event.external_count >= (2 if event.has_group else 1):
+        return CUSTOMER, "outside attendees"
 
     return BUSY, ""

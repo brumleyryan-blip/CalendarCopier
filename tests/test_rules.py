@@ -112,7 +112,7 @@ class PlanTest(unittest.TestCase):
         self.assertTrue(p.deletes_suppressed)
 
     def test_title_change_counts_as_update(self):
-        p = plan([event(key="a")], [existing("a", title="Old label")], TODAY)
+        p = plan([event(key="a")], [existing("a", title="Webinar - Off Camera")], TODAY)  # auto label, now stale
         self.assertEqual(len(p.updates), 1)
 
 
