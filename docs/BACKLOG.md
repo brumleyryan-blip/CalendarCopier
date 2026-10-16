@@ -77,13 +77,15 @@ without screenshots or memory.
   1. [tag] override: [webinar]/[listen]/[away]/[video]/[busy]
   2. Away: street address in location, or a booked conference room
   3. Webinar: keywords (webinar, AHOD, all hands, town hall, office hours, training,
-     enablement, lunch & learn); livestream links (livestreaming/partnersuccess.cisco.com,
+     enablement, lunch & learn, AI Easy Button); livestream links (livestreaming/partnersuccess.cisco.com,
      Cisco TV, location "Webinar"); 50+ attendees; distribution list with <=3 attendees
   4. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
   5. Video: "red river" or "sync" in title; Jacob Shaver attending
   6. Customer: outside @cisco.com attendee(s) -> "Customer Call - On Video"
      (2+ needed when a distribution list is invited)
-  7. Busy
+  7. Video: 1:1 / 1x1 / 1-on-1 / one-on-one in title (after customer, so customer 1:1s
+     keep the customer label)
+  8. Busy
   Hand edits: a block renamed on the shared calendar keeps its title (times still sync);
   delete it to get the automatic label back.
   Not copied at all: reminders ("due by", "Friday EOD") and time off (OOO, PTO, VTO,

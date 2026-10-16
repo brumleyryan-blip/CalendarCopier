@@ -110,6 +110,20 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(cat(title="Lunch w/ Bepco", external=2), AWAY)
         self.assertEqual(cat(title="Bepco QBR", external=3, location="100 Main St"), AWAY)
 
+    def test_ai_easy_button_is_a_webinar(self):
+        self.assertEqual(cat(title="AI Easy Button", attendees=34, group=True), WEBINAR)
+
+    def test_one_on_ones(self):
+        for title in ["Ryan / Jamey 1:1", "1:1 - Ryan & Corina", "Ryan 1x1", "One-on-one: Q4 plan"]:
+            self.assertEqual(cat(title=title), VIDEO, title)
+
+    def test_customer_one_on_one_stays_customer(self):
+        self.assertEqual(cat(title="Steve & Cisco 1:1", external=1), CUSTOMER)
+
+    def test_one_on_one_needs_exact_token(self):
+        self.assertEqual(cat(title="Standup 11:15"), BUSY)
+        self.assertEqual(cat(title="Review 1:10 ratio"), BUSY)
+
     def test_sync_is_whole_word(self):
         self.assertEqual(cat(title="Async updates"), BUSY)
 

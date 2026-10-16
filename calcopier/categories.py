@@ -20,7 +20,8 @@ OVERRIDES = {"busy": BUSY, "webinar": WEBINAR, "listen": WEBINAR, "away": AWAY, 
 OVERRIDE_RE = re.compile(r"\[(" + "|".join(OVERRIDES) + r")\]", re.I)
 
 WEBINAR_WORDS = ["webinar", "ahod", "all hands", "all-hands", "town hall", "townhall", "office hours",
-                 "training", "enablement", "lunch & learn", "lunch and learn", "lunch n learn"]
+                 "training", "enablement", "lunch & learn", "lunch and learn", "lunch n learn",
+                 "ai easy button"]
 AWAY_WORDS = ["onsite", "on-site", "on site", "visit", "lunch", "dinner", "offsite", "off-site",
               "travel", "flight", "in person", "in-person"]
 # Broadcast/livestream links: watched, not joined on camera.
@@ -35,6 +36,8 @@ SKIP_WORDS = ["due by", "friday eod", "ooo", "pto", "vto", "out of office"]
 # Meetings where Ryan is expected on camera.
 VIDEO_TITLE_WORDS = ["red river", "sync"]
 VIDEO_PEOPLE = ["jacob shaver"]
+# Checked after the customer rule, so a 1:1 with a customer keeps the customer label.
+ONE_ON_ONE_WORDS = ["1:1", "1x1", "1-on-1", "one on one", "one-on-one"]
 STREET = re.compile(r"\b\d{2,6}\s+[\w .'-]+\b(st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|"
                     r"ln|lane|way|pkwy|parkway|hwy|highway|ct|court|pl|place|suite|ste)\b\.?", re.I)
 
@@ -89,5 +92,8 @@ def classify(event: WorkEvent):
     # An internal list invite with one stray outside address is still an internal meeting.
     if event.external_count >= (2 if event.has_group else 1):
         return CUSTOMER, "outside attendees"
+
+    if _has_word(event.title, ONE_ON_ONE_WORDS):
+        return VIDEO, "1:1"
 
     return BUSY, ""
