@@ -26,6 +26,9 @@ LIVESTREAM_HINTS = ["livestreaming.cisco.com", "partnersuccess.cisco.com", "cisc
 LARGE_AUDIENCE = 50
 BROADCAST_MAX_ATTENDEES = 3   # a distribution list plus little more than you = a broadcast invite
 
+# Calendar reminders that aren't really meetings (e.g. "... | Due by Noon Thursday"). Not copied.
+REMINDER_WORDS = ["due by", "friday eod"]
+
 # Meetings where Ryan is expected on camera.
 VIDEO_TITLE_WORDS = ["red river", "sync"]
 VIDEO_PEOPLE = ["jacob shaver"]
@@ -36,6 +39,12 @@ STREET = re.compile(r"\b\d{2,6}\s+[\w .'-]+\b(st|street|ave|avenue|rd|road|blvd|
 def _has_word(text, words):
     text = text.lower()
     return next((w for w in words if re.search(r"(?<!\w)" + re.escape(w) + r"(?!\w)", text)), None)
+
+
+def is_reminder(event: WorkEvent) -> bool:
+    if OVERRIDE_RE.search(event.title):  # a [tag] means it's a real meeting
+        return False
+    return _has_word(event.title, REMINDER_WORDS) is not None
 
 
 def classify(event: WorkEvent):

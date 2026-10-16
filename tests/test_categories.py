@@ -97,6 +97,21 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(classify(ev()), (BUSY, ""))
 
 
+class ReminderTest(unittest.TestCase):
+    def test_reminders_not_copied(self):
+        from calcopier.rules import should_copy
+        for title in ["My Performance Weekly Check In | Due by Noon Thursday Weekly", "Friday EOD"]:
+            self.assertFalse(should_copy(ev(title=title, names=("Jacob Shaver",))), title)
+
+    def test_tagged_reminder_is_copied(self):
+        from calcopier.rules import should_copy
+        self.assertTrue(should_copy(ev(title="Friday EOD [video]")))
+
+    def test_ordinary_meetings_still_copied(self):
+        from calcopier.rules import should_copy
+        self.assertTrue(should_copy(ev(title="EOD review with team")))
+
+
 class BlockLabelTest(unittest.TestCase):
     def test_labels_and_reason(self):
         b = to_block(ev(title="All Hands"))

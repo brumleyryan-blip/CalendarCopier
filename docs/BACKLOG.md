@@ -94,6 +94,7 @@ without screenshots or memory.
   4. Video: "red river" or "sync" in title; Jacob Shaver attending
   5. Away: keywords (onsite, visit, lunch, dinner, offsite, travel, flight, in person)
   6. Busy
+  Not copied at all: reminders ("due by", "Friday EOD") unless [tagged].
   Learned 2026-10-16: distribution lists alone over-matched (team meetings use them);
   no meetings had external attendees, so customer detection is deferred.
 
