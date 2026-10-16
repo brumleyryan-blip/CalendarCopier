@@ -70,18 +70,6 @@ without screenshots or memory.
   Find calendars by their stable identifier instead of title (a renamed Exchange calendar
   broke the lookup during F1). Low priority while the title matches the server name.
 
-- [ ] **F3.5 — Sharing setup (no code)** — sharing 2026-10-16; watching alerts, latency, label clarity
-  Decided: normal iCloud share to her Apple ID, view-only. She turns off
-  Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
-  calendars). Still to verify on her phone: no alerts from default alert times.
-
-- [ ] **F4 — Failure visibility** — design in review (mockup: stale-warning options A/B/C)
-  Plan: dead-man's-switch warning block on the shared calendar (pushed ahead each good run,
-  comes due if syncing stops) plus a macOS notification on sync errors.
-  If the sync breaks (calendar missing, permission revoked, Mac asleep), I get notified
-  rather than the calendar silently going stale. Also: look up calendars by their stable
-  identifier instead of title (a renamed Exchange calendar broke the lookup during F1).
-
 - [x] **F5 — Categorization v1 (rules)** — verified 2026-10-16 on real meetings
   Labels: "Webinar - Off Camera", "Away from Home", "Video Call - On Camera", "Busy".
   Single calendar ("CalendarCopier"); category in the title, reason in the notes.
