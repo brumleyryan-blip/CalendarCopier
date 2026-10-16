@@ -60,11 +60,11 @@ without screenshots or memory.
   Settings > Notifications > Calendar > Shared Calendar Changes (she has no other shared
   calendars). Still to verify on her phone: no alerts from default alert times.
 
-- [x] **F4 — Failure visibility** — verified 2026-10-15: marker created, notification once per error
-  Chosen design: option C, a 30-min "Sync paused" marker on the shared calendar. Each good run
-  keeps it ~2h ahead (moved only when <90 min away, ~48 writes/day), so if syncing stops it
-  comes due 90–120 min after the last update. Its notes give the last-update time. Any hour.
+- [x] **F4 — Failure visibility** — revised 2026-10-16
   macOS notification on sync errors only, once per distinct error. Log trimmed past 1 MB.
+  The "Sync paused" calendar marker (kept ~2h ahead, came due if syncing stopped) was
+  removed: it was always visible in her upcoming schedule. A true "only when stale" marker
+  needs something running while the Mac sleeps (e.g. a cloud watchdog); not worth it for now.
 
 - [ ] **F4.1 — Rename-proof calendar lookup** — parked; F4 alerts catch a rename quickly
   Find calendars by their stable identifier instead of title (a renamed Exchange calendar

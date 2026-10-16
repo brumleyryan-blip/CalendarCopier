@@ -111,6 +111,11 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(p.deletes, [])
         self.assertTrue(p.deletes_suppressed)
 
+    def test_leftover_sync_paused_marker_removed(self):
+        marker = existing("__calcopier_heartbeat__", start=T0 + timedelta(hours=2), title="Sync paused")
+        p = plan([event(key="a")], [existing("a"), marker], TODAY)
+        self.assertEqual([ex.title for ex in p.deletes], ["Sync paused"])
+
     def test_title_change_counts_as_update(self):
         p = plan([event(key="a")], [existing("a", title="Webinar - Off Camera")], TODAY)  # auto label, now stale
         self.assertEqual(len(p.updates), 1)

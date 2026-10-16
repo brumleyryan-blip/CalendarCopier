@@ -1,8 +1,8 @@
 """Sync work meetings into the shared calendar as 'Busy' blocks.
 
 Creates new blocks, moves blocks whose meeting moved, and removes blocks for meetings that
-were cancelled or declined. Days before today are never touched. Keeps a "Sync paused" marker
-ahead of now that comes due on its own if syncing stops, and notifies on this Mac when a sync fails.
+were cancelled or declined. Days before today are never touched. Notifies on this Mac when a
+sync fails.
 
 Usage:
     python -m calcopier.sync --dry-run     # show what would change
@@ -47,8 +47,7 @@ def main(argv=None):
 
         events = cal.read_work_events(store, source, start, end)
         existing = cal.existing_blocks(store, dest, start, end)
-        now = datetime.now().astimezone()
-        p = rules.plan(events, existing, start, heartbeat=rules.heartbeat_block(now), now=now)
+        p = rules.plan(events, existing, start)
 
         print(f"[{_stamp()}] {len(events)} work events: {len(p.creates)} to create, {len(p.updates)} to move, "
               f"{len(p.deletes)} to remove, {p.kept} unchanged.")
