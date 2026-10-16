@@ -29,7 +29,7 @@ def main(argv=None):
     parser.add_argument("--source", default="Calendar", help="Work calendar title (server name for Exchange)")
     parser.add_argument("--source-account", default="Exchange", help="Account the work calendar belongs to")
     parser.add_argument("--dest", default="CalendarCopier", help="Shared calendar title")
-    parser.add_argument("--days", type=int, default=7)
+    parser.add_argument("--days", type=int, default=21, help="How many days ahead to sync")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 

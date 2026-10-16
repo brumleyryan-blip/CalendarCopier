@@ -9,7 +9,7 @@ without screenshots or memory.
 | Work calendar source | Microsoft 365 / Outlook (Exchange) |
 | Destination | iCloud calendar "CalendarCopier", written locally via EventKit, shared to her Apple ID (replaces Google: no OAuth needed) |
 | Event content (v1) | Generic "Busy"; category label added in a later feature |
-| Window | Next 7 days |
+| Window | Today + next 21 days (was 7 until 2026-10-16) |
 | Source lookup | Exchange account + server name "Calendar" (local renames of Exchange calendars revert) |
 | Status rules | Declined hidden; tentative, unanswered and organizer shown as busy; all-day skipped |
 | Self-blocks | Shown as "Busy" (no separate focus category) |
